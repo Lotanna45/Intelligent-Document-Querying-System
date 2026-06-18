@@ -1,6 +1,6 @@
 # Intelligent Document Querying System (Heavy Machinery Domain)
 
-[cite_start]An enterprise-grade, Retrieval-Augmented Generation (RAG) system engineered to securely ingest, index, and query technical document corpora using natural language interfaces[cite: 39, 40, 49]. [cite_start]This solution leverages **Amazon Bedrock** for foundational model orchestration, **Amazon Aurora Postgres Serverless (with `pgvector`)** for scalable vector storage, and **Amazon S3** for secure document housing[cite: 41, 42, 43]. [cite_start]The client layer is powered by a **Streamlit** interactive dashboard, and the entire ecosystem is provisioned deterministically using **Terraform** for Infrastructure as Code (IaC)[cite: 54].
+An enterprise-grade, Retrieval-Augmented Generation (RAG) system engineered to securely ingest, index, and query technical document corpora using natural language interfaces. This solution leverages Amazon Bedrock for foundational model orchestration, Amazon Aurora Postgres Serverless (with pgvector) for scalable vector storage, and Amazon S3 for secure document housing. The client layer is powered by a Streamlit interactive dashboard, and the entire ecosystem is provisioned deterministically using Terraform for Infrastructure as Code (IaC).
 
 ---
 
@@ -9,28 +9,32 @@
 The architecture relies on a multi-stack decoupled structure to isolate database provisioning from the AI orchestration layers, maximizing security, modularity, and resource independence.
 
 ### Component Breakdown
-* **Data Layer & Storage:** Amazon S3 serves as the landing zone for technical documentation and specification sheets[cite: 3, 43].
-* **Vector Store & Indexing:** Amazon Aurora Serverless acts as the operational vector database, managing document chunks and high-dimensional semantic vectors using the PostgreSQL `pgvector` extension[cite: 30, 42].
-* **Orchestration Layer:** Amazon Bedrock manages runtime embedding generation and semantic search matching against the database[cite: 6, 41].
-* **Security Guardrails:** A classification model acts as an application firewall, enforcing prompt input boundaries so only domain-relevant inputs execute downstream.
-* **Application Interface:** A Streamlit single-page application built with active session state memory tracks multi-turn conversations and manipulates generation metrics.
+*   **Data Layer & Storage:** Amazon S3 serves as the landing zone for technical documentation and specification sheets.
+*   **Vector Store & Indexing:** Amazon Aurora Serverless acts as the operational vector database, managing document chunks and high-dimensional semantic vectors using the PostgreSQL `pgvector` extension.
+*   **Orchestration Layer:** Amazon Bedrock manages runtime embedding generation and semantic search matching against the database.
+*   **Security Guardrails:** A classification model acts as an application firewall, enforcing prompt input boundaries so only domain-relevant inputs execute downstream.
+*   **Application Interface:** A Streamlit single-page application built with active session state memory tracks multi-turn conversations and manipulates generation metrics.
 
 ---
 
 ## ⚙️ Core Ingestion & LLM Processing Pipeline
 
 ### 1. Multi-Stage Ingestion Pipeline
+
 The document ingestion process moves through four distinct stages:
+
 1. **Staging:** Source domain PDFs are placed in the local directory structure.
-2. **S3 Transmission:** An automated batch script copies files to an S3 bucket while preserving the nested folder hierarchy paths[cite: 4, 10].
+2. **S3 Transmission:** An automated batch script copies files to an S3 bucket while preserving the nested folder hierarchy paths.
 3. **Chunking & Embedding:** Syncing the Bedrock Knowledge Base breaks long technical documents into discrete chunks, passes them through an embedding model, and extracts geometric representations.
 4. **Vector Upsert:** High-dimensional embeddings are indexed directly inside the target tables in the Aurora Postgres cluster.
 
 ### 2. Guardrails & Sampling Mechanics
+
 To protect system resources and guarantee domain safety, input filtering is implemented alongside exact token control:
+
 * **Prompt Guardrail (Input Validation):** Every user prompt runs through an internal classification function (`valid_prompt`). If a prompt falls under an out-of-domain query (e.g., general knowledge, architecture info, profanity, or system prompt injection attempts), execution halts immediately before triggering vector storage retrieval or charging LLM context costs.
-* **Temperature:** Adjusts the probability distribution of the next word to control the randomness of the output[cite: 59]. Low levels make the model deterministic, predictable, and factual[cite: 60, 61].
-* **Top_p (Nucleus Sampling):** Controls the vocabulary size from which the model selects its next token[cite: 63]. Low Top_p configurations restrict the pool to a highly probable subset, producing focused and coherent responses[cite: 64].
+* **Temperature:** Adjusts the probability distribution of the next word to control the randomness of the output. Low levels make the model deterministic, predictable, and factual.
+* **Top_p (Nucleus Sampling):** Controls the vocabulary size from which the model selects its next token. Low Top_p configurations restrict the pool to a highly probable subset, producing focused and coherent responses.
 
 ---
 
@@ -72,11 +76,11 @@ project-root/
 
 ### Prerequisites
 * Fully updated AWS CLI instance with administrative privileges.
-* Terraform CLI installed[cite: 19, 20].
+* Terraform CLI installed,
 * Python 3.10+ virtual environment (`venv`) activated.
 
 #### Step 1: Base Infrastructure Provisioning (Stack 1)
-Initialize and build the core network topology, secure private subnets, security groups, the S3 file drop, and the backend Aurora Serverless PostgreSQL cluster[cite: 21, 25].
+Initialize and build the core network topology, secure private subnets, security groups, the S3 file drop, and the backend Aurora Serverless PostgreSQL cluster
 ```bash
 cd stack1
 terraform init
